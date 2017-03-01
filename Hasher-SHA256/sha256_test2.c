@@ -25,12 +25,18 @@ void sha256_hasher(BYTE text1[])
 	                                 0xb0,0x03,0x61,0xa3,0x96,0x17,0x7a,0x9c,0xb4,0x10,0xff,0x61,0xf2,0x00,0x15,0xad};*/
 	BYTE buf[SHA256_BLOCK_SIZE];
 	SHA256_CTX ctx;
-	int pass = 1;
+	//int pass = 1;
 
 	sha256_init(&ctx);
 	sha256_update(&ctx, text1, strlen(text1));
 	sha256_final(&ctx, buf);
-	printf("Hash outputed: %x\n", buf);
+	printf("Hash outputed:\n");
+	int i = 0;
+	for (; i < sizeof(buf); i++) {
+		printf("%02X", buf[i]);
+	}
+	printf("\n");
+	
 }
 
 int main(int argc, char* argv[])
