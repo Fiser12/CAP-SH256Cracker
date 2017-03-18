@@ -9,10 +9,11 @@ unsigned char* fromDeci(char alpha[], int base, int inputNum, int length)
     unsigned char * devolver = (unsigned char *)calloc(length, sizeof(unsigned char));
     int i = 0;
     do{
-        devolver[i] = alpha[inputNum%base];
+        int index = inputNum%base;
+        devolver[i] = alpha[index];
         inputNum = inputNum/base;
         i++;
-    }while(inputNum>=base);
+    }while(i!=length);
     devolver[i] = inputNum;
 
     return devolver;
@@ -20,10 +21,11 @@ unsigned char* fromDeci(char alpha[], int base, int inputNum, int length)
 int main(int argc, const char* argv[]) {
     unsigned char alpha[] = "01231456789ABCDEF";
     int lenKey = 3;
-    int lenAlpha = strlen(alpha);
+    int lenAlpha = strlen(alpha)-1;
     int i = 0;
-    for(i = 0; i<lenAlpha^lenKey; i++){
-        printf("%s\n", fromDeci(alpha, lenAlpha, i, lenAlpha*lenKey));
+    for(i = 0; i<lenKey^(lenAlpha); i++){
+        unsigned char * result = fromDeci(alpha, lenAlpha, i, lenKey);
+        printf("%s\n", result);
     }
     return 0;
 }

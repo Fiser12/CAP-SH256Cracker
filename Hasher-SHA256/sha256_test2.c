@@ -34,7 +34,7 @@ void sha256_hasher(BYTE text1[])
 	printf("\n");
 	
 }
-
+/*
 int main(int argc, char* argv[])
 {	
 	//printf("Programe name: %s\n", argv[0]);
@@ -43,3 +43,4 @@ int main(int argc, char* argv[])
 
 	return(0);
 }
+*/
