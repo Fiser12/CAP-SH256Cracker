@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-unsigned char* fromDeci(char alpha[], int base, int inputNum, int length)
+unsigned char* fromDeci(unsigned char alpha[], int base, int inputNum, int length)
 {
     unsigned char * devolver = (unsigned char *)calloc(length-1, sizeof(unsigned char));
     int num = inputNum;
@@ -22,9 +22,9 @@ unsigned char* fromDeci(char alpha[], int base, int inputNum, int length)
     return devolver;
 }
 int main(int argc, const char* argv[]) {
-    unsigned char alpha[] = "01231456789ABCDEF";
+    unsigned char alpha[] = "0123456789ABCDEF";
     int lenKey = 2;
-    int lenAlpha = strlen(alpha)-1;
+    int lenAlpha = strlen(alpha);
     int i = 0;
     int valor = pow(lenAlpha, lenKey);
     for(i = 0; i<valor; i++){
