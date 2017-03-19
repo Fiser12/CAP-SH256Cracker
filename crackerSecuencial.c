@@ -10,14 +10,14 @@ unsigned char* fromDeci(char alpha[], int base, int inputNum, int length)
 {
     unsigned char * devolver = (unsigned char *)calloc(length-1, sizeof(unsigned char));
     int num = inputNum;
-    int i = 0;
+    int i = length-1;
     do{
-        int index = num%(base+1);
+        int index = num%(base);
         devolver[i] = alpha[index];
         num = num/base;
-        i++;
+        i--;
     }while(num>=base);
-    devolver[i] = alpha[num%(base+1)];
+    devolver[i] = alpha[num];
 
     return devolver;
 }
