@@ -1,9 +1,12 @@
+/* ARCHIVO DE PRUEBA (eliminar cuando no se necesite mas) !!! */
 #include <stdio.h>
-#include "mypow.h"  /* Include the header here, to obtain the function declaration */
+#include "mypow.h"
 
 /* ARCHIVO DE PRUEBA (eliminar cuando no se necesite mas) !!! */
 int main(void)
 {
-    printf("Probando... : %llu", mypow(2,50));
+    printf("Probando... : %llu", mypow(2,63));
+	unsigned char hola = 1;
+	printf("%c", hola);
     return 0;
 }
