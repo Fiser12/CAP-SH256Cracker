@@ -5,9 +5,7 @@ set(CMAKE_CXX_STANDARD 11)
 
 set(SOURCE_FILES
         crackerSecuencial.c
-        Hasher-SHA256/sha256.c
-        Hasher-SHA256/sha256.h
-        Hasher-SHA256/sha256_test2.c)
+)
 
 include_directories(.)
 include_directories(Hasher-SHA256)
