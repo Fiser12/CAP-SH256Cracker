@@ -33,31 +33,35 @@ int main(int argc, const char* argv[]) {
 	//unsigned char alphabet[] = "abcdefghijklmnopqrstuvwxyz0123456789";
 	//unsigned char alphabet[] = "abcdefghijklmnopqrstuvwxyz";
     	unsigned char alphabet[] = "0123456789ABCDEF";
-    	int lenKey = 4;
-    	int lenAlpha = strlen(alphabet);
-	unsigned long long keyspace = mypow(lenAlpha, lenKey); // Aqui calculamos el tamaño de nuestro keyspace. Es decir el total de combinaciones totales dado un alfabeto y la longitud de una hipotetica clave.
+	int lenAlpha = strlen(alphabet);
+	int lenKeyMin = 1; // TODO: Por parametro tenemos que evitar que nos metan un 0, el minimo tendria que ser al menos siempre 1. Tenerlo en cuenta a la hora de implementar el 'getopt'
+	int lenKeyMax = 4; // TODO: Asegurarnos de que el usuarios siempre meta un MAX, nunca puede ir este campo vacio. Tenerlo en cuenta a la hora de implementar el 'getopt'
+	unsigned long long keyspace;
     	unsigned long long i = 0;
+	int j;
     
-	// Generacion de TODAS las claves CANDIDATAS para una clave de un determinado tamaño:
-    	for(; i<keyspace; i++){
-       		unsigned char *candidato = cambioBase(alphabet, i, lenKey);
-		printf("Clave candidata: %s\n", candidato); // 'i' corresponde a la clave candidata posicion 'i' del total de claves posibles.
-		free(candidato);
+	// Generacion de TODAS las claves CANDIDATAS para una clave de un determinado tamaño comprendido entre MIN y MAX:
+	for(j = lenKeyMin; j<=lenKeyMax; j++) {
+		keyspace = mypow(lenAlpha, j);
+	    	for(i = 0; i<keyspace; i++){
+	       		unsigned char *candidato = cambioBase(alphabet, i, j);
+			printf("(i:%d) Clave candidata: %s\n", i, candidato); // 'i' corresponde a la clave candidata posicion 'i' del total de claves posibles.
+			free(candidato);
+		}
 	}
-	
+
 	unsigned char *digest;
 	unsigned char kaixo[] = "kaixo";
-	int block_size = sha256_hasher(kaixo, &digest);
-	unsigned char hola[block_size];
-	memset(hola, '\0', sizeof(hola));
-	strcpy(hola, digest);
+	digest = sha256_hasher(kaixo);
+	// TODO: free ?????? de dentro de sha256_hasher
 	int l = 0;
 	printf("hola?\n");
-//	printf("%d\n", strlen(&digest));
-	for (; l < sizeof(hola); l++) {
-		printf("%02X", hola[l]);
+	printf("%d\n", strlen(digest));
+	for (; l < strlen(digest); l++) {
+		printf("%02X", digest[l]);
 	}
 	printf("\n");
+	
 
     return 0;
 }

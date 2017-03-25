@@ -158,7 +158,7 @@ void sha256_final(SHA256_CTX *ctx, BYTE hash[])
 	}
 }
 
-int sha256_hasher(BYTE text1[], unsigned char *output)
+unsigned char * sha256_hasher(BYTE text1[])
 {
 	BYTE buf[SHA256_BLOCK_SIZE];
 	SHA256_CTX ctx;
@@ -166,11 +166,15 @@ int sha256_hasher(BYTE text1[], unsigned char *output)
 	sha256_init(&ctx);
 	sha256_update(&ctx, text1, strlen(text1));
 	sha256_final(&ctx, buf);
-	output = buf;
+	unsigned char *output = (unsigned char *)calloc(sizeof(buf), sizeof(unsigned char));
+	memcpy(output, buf, sizeof(buf));
+	//output = buf;
 	int i = 0;
+	printf("strlen del output: %d\n", sizeof(output));
 	for (; i < sizeof(buf); i++) {
 		printf("%02X", output[i]);
 	}
 	printf("\n");
-	return SHA256_BLOCK_SIZE;
+	return output;
+	//return SHA256_BLOCK_SIZE;
 }
