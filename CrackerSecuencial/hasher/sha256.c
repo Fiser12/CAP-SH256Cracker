@@ -169,12 +169,12 @@ unsigned char * sha256_hasher(BYTE text1[])
 	unsigned char *output = (unsigned char *)calloc(sizeof(buf), sizeof(unsigned char));
 	memcpy(output, buf, sizeof(buf));
 	//output = buf;
-	int i = 0;
-	printf("strlen del output: %d\n", sizeof(output));
+	/*int i = 0;
 	for (; i < sizeof(buf); i++) {
 		printf("%02X", output[i]);
 	}
 	printf("\n");
+	*/
 	return output;
 	//return SHA256_BLOCK_SIZE;
 }

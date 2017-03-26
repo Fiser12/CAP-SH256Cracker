@@ -4,13 +4,13 @@
 #include "mypow.h"
 #include "hasher/sha256.h"
 
-/* Programa que dado un ALFABETO, un MINIMO y un MAXIMO de longitud de clave y el DIGGEST (generado por un hasher), genera una lista con tadas las claves candidatas posibles. */
+/* Programa que dado un ALFABETO, un MINIMO y un MAXIMO de longitud de clave y el DIGGEST (generado por un hasher), genera una lista con tadas las claves candidatas posibles al mismo tiempo que contrasta si el diggest coincide con el hash de la clave candidata. Si coincide o no, se muestra un mensaje por pantalla indicandolo. */
 /* ------------------------------------------------------ */
 
 /* Funcion que cambia de base un determinado numero en base al alfabeto pasado por parametro */
 unsigned char * cambioBase(unsigned char alpha[], unsigned long long num, int key_len)
 {
-    	unsigned char *devolver = (unsigned char *)calloc(key_len+1, sizeof(unsigned char));
+    	unsigned char *devolver = (unsigned char *)calloc(key_len, sizeof(unsigned char));
     	// Before doing anything else, we fill up the entire "string" with the very first value of the alphabet, element [0]:
 	memset(devolver, alpha[0], key_len);
     	int base = strlen(alpha);
@@ -22,6 +22,7 @@ unsigned char * cambioBase(unsigned char alpha[], unsigned long long num, int ke
         	cociente = cociente/base;
         	i--;
     	} while(cociente != 0);
+	devolver[key_len] = '\0';
     	return devolver;
 }
 
@@ -33,9 +34,10 @@ int main(int argc, const char* argv[]) {
 	//unsigned char alphabet[] = "abcdefghijklmnopqrstuvwxyz0123456789";
 	//unsigned char alphabet[] = "abcdefghijklmnopqrstuvwxyz";
     	unsigned char alphabet[] = "0123456789ABCDEF";
+	unsigned char *ejemplo_diggest = "296D71A7F66E75B751C597094536329DCF2CF484F83E475D91F7AEA1FF4C9738"; // BA TODO: esto debiera ser pasado por parametro. Es SOLO un EJEMPLO.
 	int lenAlpha = strlen(alphabet);
 	int lenKeyMin = 1; // TODO: Por parametro tenemos que evitar que nos metan un 0, el minimo tendria que ser al menos siempre 1. Tenerlo en cuenta a la hora de implementar el 'getopt'
-	int lenKeyMax = 4; // TODO: Asegurarnos de que el usuarios siempre meta un MAX, nunca puede ir este campo vacio. Tenerlo en cuenta a la hora de implementar el 'getopt'
+	int lenKeyMax = 2; // TODO: Asegurarnos de que el usuarios siempre meta un MAX, nunca puede ir este campo vacio. Tenerlo en cuenta a la hora de implementar el 'getopt'
 	unsigned long long keyspace;
     	unsigned long long i = 0;
 	int j;
@@ -45,23 +47,44 @@ int main(int argc, const char* argv[]) {
 		keyspace = mypow(lenAlpha, j);
 	    	for(i = 0; i<keyspace; i++){
 	       		unsigned char *candidato = cambioBase(alphabet, i, j);
-			printf("(i:%d) Clave candidata: %s\n", i, candidato); // 'i' corresponde a la clave candidata posicion 'i' del total de claves posibles.
+			//printf("(i:%d) Clave candidata: %s", i, candidato); // 'i' corresponde a la clave candidata posicion 'i' del total de claves posibles.
+			// Hasheamos el candidato con nuestra funcion Hash:
+			unsigned char *candidate_diggest = sha256_hasher(candidato);
+			/*int l = 0;
+			printf("\tHash(candidato): ");
+			for (; l < strlen(candidate_diggest); l++) {
+				printf("%02X", candidate_diggest[l]);
+			}
+			printf("\n");*/
+			if (strcmp("BA", candidato) == 0) {
+				printf("%s \t | \t ", ejemplo_diggest);
+				int l = 0;
+				for (; l < strlen(candidate_diggest); l++) {
+					printf("%02X", candidate_diggest[l]);
+				}
+				printf("\n");
+				printf("%d | %d \n", strlen(ejemplo_diggest), strlen(candidate_diggest));
+			}
+			int comparacion = strcmp((unsigned char *)ejemplo_diggest, candidate_diggest);
+			//printf("Comparacion: %d\n", comparacion);
 			free(candidato);
+			free(candidate_diggest);
 		}
 	}
 
+	// No borrar: pruebas para la funcion sha256!!
+	/*
 	unsigned char *digest;
-	unsigned char kaixo[] = "kaixo";
+	//unsigned char kaixo[] = "kaixo";
+	unsigned char *kaixo = "A";
 	digest = sha256_hasher(kaixo);
-	// TODO: free ?????? de dentro de sha256_hasher
 	int l = 0;
-	printf("hola?\n");
-	printf("%d\n", strlen(digest));
 	for (; l < strlen(digest); l++) {
 		printf("%02X", digest[l]);
 	}
 	printf("\n");
-	
+	free(digest);
+	*/
 
     return 0;
 }
