@@ -7,7 +7,7 @@
 /* Programa que dado un ALFABETO, un MINIMO y un MAXIMO de longitud de clave y el DIGGEST (generado por un hasher), genera una lista con tadas las claves candidatas posibles al mismo tiempo que contrasta si el diggest coincide con el hash de la clave candidata. Si coincide o no, se muestra un mensaje por pantalla indicandolo. */
 /* ------------------------------------------------------ */
 
-/* Funcion que cambia de base un determinado numero en base al alfabeto pasado por parametro */
+/* Funcion que cambia de base decimal a una base en funcion del alfabeto pasado por parametro y longitud de clave */
 unsigned char * cambioBase(unsigned char alpha[], unsigned long long num, int key_len)
 {
     	unsigned char *devolver = (unsigned char *)calloc(key_len, sizeof(unsigned char));
@@ -50,12 +50,6 @@ int main(int argc, const char* argv[]) {
 			//printf("(i:%d) Clave candidata: %s", i, candidato); // 'i' corresponde a la clave candidata posicion 'i' del total de claves posibles.
 			// Hasheamos el candidato con nuestra funcion Hash:
 			unsigned char *candidate_diggest = sha256_hasher(candidato);
-			/*int l = 0;
-			printf("\tHash(candidato): ");
-			for (; l < strlen(candidate_diggest); l++) {
-				printf("%02X", candidate_diggest[l]);
-			}
-			printf("\n");*/
 			if (strcmp("BA", candidato) == 0) {
 				printf("%s \t | \t ", ejemplo_diggest);
 				int l = 0;
