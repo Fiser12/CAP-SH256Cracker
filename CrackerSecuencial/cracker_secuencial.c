@@ -59,9 +59,9 @@ int main(int argc, const char *argv[]) {
                 printf("%s \t | \t %s\n", buffer, ejemplo_diggest);
                 printf("\n");
                 printf("%d | %d \n", strlen(ejemplo_diggest), strlen(buffer));
+                int comparacion = strcmp((unsigned char *) ejemplo_diggest, candidate_diggest);
+                printf("Comparacion: %d\n", comparacion);
             }
-            int comparacion = strcmp((unsigned char *) ejemplo_diggest, candidate_diggest);
-            //printf("Comparacion: %d\n", comparacion);
             free(candidato);
             free(candidate_diggest);
         }
