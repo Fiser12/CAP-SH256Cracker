@@ -32,12 +32,16 @@ int main(int argc, const char *argv[]) {
     //unsigned char alphabet[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     //unsigned char alphabet[] = "abcdefghijklmnopqrstuvwxyz0123456789";
     //unsigned char alphabet[] = "abcdefghijklmnopqrstuvwxyz";
+    //TODO BY PARAMETER
     unsigned char alphabet[] = "0123456789ABCDEF";
-    unsigned char *ejemplo_diggest = "296D71A7F66E75B751C597094536329DCF2CF484F83E475D91F7AEA1FF4C9738"; // BA TODO: esto debiera ser pasado por parametro. Es SOLO un EJEMPLO.
+    //TODO BY PARAMETER
+    unsigned char *ejemplo_diggest = "F6E0A1E2AC41945A9AA7FF8A8AAA0CEBC12A3BCC981A929AD5CF810A090E11AE"; // 111 TODO: esto debiera ser pasado por parametro. Es SOLO un EJEMPLO.
 
     int lenAlpha = strlen(alphabet);
-    int lenKeyMin = 1; // TODO: Por parametro tenemos que evitar que nos metan un 0, el minimo tendria que ser al menos siempre 1. Tenerlo en cuenta a la hora de implementar el 'getopt'
-    int lenKeyMax = 2; // TODO: Asegurarnos de que el usuarios siempre meta un MAX, nunca puede ir este campo vacio. Tenerlo en cuenta a la hora de implementar el 'getopt'
+    //TODO BY PARAMETER
+    int lenKeyMin = 2; // TODO: Por parametro tenemos que evitar que nos metan un 0, el minimo tendria que ser al menos siempre 1. Tenerlo en cuenta a la hora de implementar el 'getopt'
+    //TODO BY PARAMETER
+    int lenKeyMax = 4; // TODO: Asegurarnos de que el usuarios siempre meta un MAX, nunca puede ir este campo vacio. Tenerlo en cuenta a la hora de implementar el 'getopt'
     unsigned long long keyspace;
     unsigned long long i = 0;
     int j;
