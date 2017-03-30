@@ -47,7 +47,6 @@ int main(int argc, const char *argv[]) {
         keyspace = mypow(lenAlpha, j);
         for (i = 0; i < keyspace; i++) {
             unsigned char *candidato = cambioBase(alphabet, i, j);
-            //printf("(i:%d) Clave candidata: %s", i, candidato); // 'i' corresponde a la clave candidata posicion 'i' del total de claves posibles.
             // Hasheamos el candidato con nuestra funcion Hash:
             unsigned char *candidate_diggest = sha256_hasher(candidato);
             int l = 0;
@@ -56,30 +55,14 @@ int main(int argc, const char *argv[]) {
                 sprintf(&buffer[2*l], "%02X", candidate_diggest[l]);
             }
             if (strcmp(ejemplo_diggest, buffer) == 0) {
-                printf("%s \t | \t %s\n", buffer, ejemplo_diggest);
+                printf("%s \n________________________________________________________________\n\n%s\n", buffer, ejemplo_diggest);
                 printf("\n");
-                printf("%d | %d \n", strlen(ejemplo_diggest), strlen(buffer));
                 int comparacion = strcmp((unsigned char *) ejemplo_diggest, buffer);
-                printf("Comparacion: %d\n", comparacion);
+                printf("Key: %s\n", candidato);
             }
             free(candidato);
             free(candidate_diggest);
         }
     }
-
-    // No borrar: pruebas para la funcion sha256!!
-    /*
-    unsigned char *digest;
-    //unsigned char kaixo[] = "kaixo";
-    unsigned char *kaixo = "A";
-    digest = sha256_hasher(kaixo);
-    int l = 0;
-    for (; l < strlen(digest); l++) {
-        printf("%02X", digest[l]);
-    }
-    printf("\n");
-    free(digest);
-    */
-
     return 0;
 }
