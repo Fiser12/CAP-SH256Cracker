@@ -61,7 +61,6 @@ int main(int argc, const char *argv[]) {
             if (strcmp(ejemplo_diggest, buffer) == 0) {
                 printf("Key: %s Text: %s\n", candidato, buffer);
                 int comparacion = strcmp((unsigned char *) ejemplo_diggest, buffer);
-                goto stop;
             }else{
                 //printf("Key: %s\n", candidato);
             }
