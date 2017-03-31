@@ -46,21 +46,29 @@ int main(int argc, const char *argv[]) {
     unsigned long long i = 0;
     int j;
 
+    //Private elements
+    unsigned char *candidato;
+    unsigned char *candidate_diggest;
+    unsigned char buffer [65];
+    int l;
+    int comparacion;
+    int stop = 0;
+
     // Generacion de TODAS las claves CANDIDATAS para una clave de un determinado tamaño comprendido entre MIN y MAX:
-    for (j = lenKeyMin; j <= lenKeyMax; j++) {
+    for (j = lenKeyMin; j <= lenKeyMax&&!stop; j++) {
         keyspace = mypow(lenAlpha, j);
-        for (i = 0; i < keyspace; i++) {
-            unsigned char *candidato = cambioBase(alphabet, i, j);
+        for (i = 0; i < keyspace&&!stop; i++) {
+            candidato = cambioBase(alphabet, i, j);
             // Hasheamos el candidato con nuestra funcion Hash:
-            unsigned char *candidate_diggest = sha256_hasher(candidato);
-            int l = 0;
-            unsigned char buffer [65];
+            candidate_diggest = sha256_hasher(candidato);
+            l = 0;
             for(l = 0; l < 32; l++) {
                 sprintf(&buffer[2*l], "%02X", candidate_diggest[l]);
             }
             if (strcmp(ejemplo_diggest, buffer) == 0) {
                 printf("Key: %s Text: %s\n", candidato, buffer);
-                int comparacion = strcmp((unsigned char *) ejemplo_diggest, buffer);
+                comparacion = strcmp((unsigned char *) ejemplo_diggest, buffer);
+                stop=1;
             }else{
                 //printf("Key: %s\n", candidato);
             }
