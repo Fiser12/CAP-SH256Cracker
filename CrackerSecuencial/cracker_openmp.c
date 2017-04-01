@@ -1,3 +1,4 @@
+#include <omp.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -41,7 +42,7 @@ int main(int argc, const char *argv[]) {
     //TODO BY PARAMETER
     int lenKeyMin = 2; // TODO: Por parametro tenemos que evitar que nos metan un 0, el minimo tendria que ser al menos siempre 1. Tenerlo en cuenta a la hora de implementar el 'getopt'
     //TODO BY PARAMETER
-    int lenKeyMax = 4; // TODO: Asegurarnos de que el usuarios siempre meta un MAX, nunca puede ir este campo vacio. Tenerlo en cuenta a la hora de implementar el 'getopt'
+    int lenKeyMax = 5; // TODO: Asegurarnos de que el usuarios siempre meta un MAX, nunca puede ir este campo vacio. Tenerlo en cuenta a la hora de implementar el 'getopt'
     unsigned long long keyspace;
     unsigned long long i = 0;
     int j;
@@ -57,7 +58,7 @@ int main(int argc, const char *argv[]) {
     for (j = lenKeyMin; j <= lenKeyMax&&!stop; j++) {
         keyspace = mypow(lenAlpha, j);
         #pragma omp parallel for private(candidato, candidate_diggest, l, buffer, comparacion, stop)
-        for (i = 0; i < keyspace&&!stop; i++) {
+        for (i = 0; i < keyspace; i++) {
             candidato = cambioBase(alphabet, i, j);
             // Hasheamos el candidato con nuestra funcion Hash:
             candidate_diggest = sha256_hasher(candidato);
@@ -70,8 +71,10 @@ int main(int argc, const char *argv[]) {
                 comparacion = strcmp((unsigned char *) ejemplo_diggest, buffer);
                 stop=1;
             }else{
-                printf("Key: %s\n", candidato);
+                //printf("Key: %s\n", candidato);
             }
+            //printf("%d / %d \n", omp_get_thread_num()/omp_get_num_threads());
+
             free(candidato);
             free(candidate_diggest);
         }
