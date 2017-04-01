@@ -55,7 +55,7 @@ int main(int argc, const char *argv[]) {
     int comparacion;
     int stop = 0;
     // Generacion de TODAS las claves CANDIDATAS para una clave de un determinado tamaño comprendido entre MIN y MAX:
-    for (j = lenKeyMin; j <= lenKeyMax&&!stop; j++) {
+    for (j = lenKeyMin; j <= lenKeyMax; j++) {
         keyspace = mypow(lenAlpha, j);
         #pragma omp parallel for private(candidato, candidate_diggest, l, buffer, comparacion, stop)
         for (i = 0; i < keyspace; i++) {
@@ -69,7 +69,6 @@ int main(int argc, const char *argv[]) {
             if (strcmp(ejemplo_diggest, buffer) == 0) {
                 printf("Key: %s Text: %s\n", candidato, buffer);
                 comparacion = strcmp((unsigned char *) ejemplo_diggest, buffer);
-                stop=1;
             }else{
                 //printf("Key: %s\n", candidato);
             }
