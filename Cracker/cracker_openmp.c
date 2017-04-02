@@ -36,7 +36,7 @@ int main(int argc, const char *argv[]) {
     //TODO BY PARAMETER
     unsigned char alphabet[] = "0123456789ABCDEF";
     //TODO BY PARAMETER
-    unsigned char *ejemplo_diggest = "F6E0A1E2AC41945A9AA7FF8A8AAA0CEBC12A3BCC981A929AD5CF810A090E11AE"; // 111 TODO: esto debiera ser pasado por parametro. Es SOLO un EJEMPLO.
+    unsigned char *ejemplo_diggest = "79E60ECBCAEFBC0A7B439D5703C2886EF9D21218920EBE5BB48AE2400977DEC9"; // 111 TODO: esto debiera ser pasado por parametro. Es SOLO un EJEMPLO.
 
     int lenAlpha = strlen(alphabet);
     //TODO BY PARAMETER
@@ -55,27 +55,31 @@ int main(int argc, const char *argv[]) {
     int comparacion;
     int stop = 0;
     // Generacion de TODAS las claves CANDIDATAS para una clave de un determinado tamaño comprendido entre MIN y MAX:
-    for (j = lenKeyMin; j <= lenKeyMax; j++) {
+    for (j = lenKeyMin; j <= lenKeyMax&&!stop; j++) {
         keyspace = mypow(lenAlpha, j);
-        #pragma omp parallel for private(candidato, candidate_diggest, l, buffer, comparacion, stop)
+        #pragma omp parallel for private(candidato, candidate_diggest, l, buffer, comparacion) shared(stop)
         for (i = 0; i < keyspace; i++) {
-            candidato = cambioBase(alphabet, i, j);
-            // Hasheamos el candidato con nuestra funcion Hash:
-            candidate_diggest = sha256_hasher(candidato);
-            l = 0;
-            for(l = 0; l < 32; l++) {
-                sprintf(&buffer[2*l], "%02X", candidate_diggest[l]);
-            }
-            if (strcmp(ejemplo_diggest, buffer) == 0) {
-                printf("Key: %s Text: %s\n", candidato, buffer);
-                comparacion = strcmp((unsigned char *) ejemplo_diggest, buffer);
-            }else{
-                //printf("Key: %s\n", candidato);
-            }
-            //printf("%d / %d \n", omp_get_thread_num()/omp_get_num_threads());
+            if(!stop) {
+                candidato = cambioBase(alphabet, i, j);
+                // Hasheamos el candidato con nuestra funcion Hash:
+                candidate_diggest = sha256_hasher(candidato);
+                l = 0;
+                for (l = 0; l < 32; l++) {
+                    sprintf(&buffer[2 * l], "%02X", candidate_diggest[l]);
+                }
+                if (strcmp(ejemplo_diggest, buffer) == 0) {
+                    printf("Key: %s Text: %s\n", candidato, buffer);
+                    comparacion = strcmp((unsigned char *) ejemplo_diggest, buffer);
+                    stop=1;
+                    #pragma omp flush(stop)
+                } else {
+                    //printf("Key: %s\n", candidato);
+                }
+                //printf("%d / %d \n", omp_get_thread_num()/omp_get_num_threads());
 
-            free(candidato);
-            free(candidate_diggest);
+                free(candidato);
+                free(candidate_diggest);
+            }
         }
     }
     return 0;
