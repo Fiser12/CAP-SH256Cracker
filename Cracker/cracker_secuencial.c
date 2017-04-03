@@ -31,23 +31,23 @@ unsigned char *cambioBase(unsigned char alpha[], unsigned long long num, int key
     return devolver;
 }
 
-/* Este es el programa principal. Recibimos los cuatro parametros antes descritos (parametros opcionales, el <hash> obligatorio!) */
+/* Este es el programa principal. Recibimos los cuatro parametros antes descritos (3 de ellos opcionales, el <hash> obligatorio!) */
 int main(int argc, char *argv[]) {   
 
-    unsigned char *alphabet = NULL; // Alfabeto que vamos a utilizar para crackear el <hash>
-    unsigned char *ejemplo_diggest = "F6E0A1E2AC41945A9AA7FF8A8AAA0CEBC12A3BCC981A929AD5CF810A090E11AE"; // 111
+    unsigned char *alphabet = NULL; // Alfabeto a utilizar para probar contra el <hash>
+    unsigned char *ejemplo_diggest = NULL; // "F6E0A1E2AC41945A9AA7FF8A8AAA0CEBC12A3BCC981A929AD5CF810A090E11AE"; // 111
     int lenKeyMin = -1; // Valores no validos iniciales antes del parseo de parametros
     int lenKeyMax = -1; // Valores no validos iniciales antes del parseo de parametros 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    int c; // Caracter de opcion que parseamos (si existe...)
-	opterr = 0; // If you set this variable to zero, getopt does not print any messages, but it still returns the character '?' to indicate an error
+    ///////// START GETOPT IMPLEMENTATION: //////////////////////////////////////////////
+    int c; // Caracter de opcion que parseamos (si existen...)
+    opterr = 0; // If you set this variable to zero, getopt does not print any messages, but it still returns the character '?' to indicate an error
 
-    // Parseamos los parametros de entrada:
+    // Parseamos los parametros de entrada, busamos una '-a', '-n' y/o '-m':
     while ((c = getopt (argc, argv, "a:n:m:")) != -1)
     switch (c) {
       case 'a':
-        alphabet = optarg; // TODO: como copiamos esto en nuestro cracker?
+        alphabet = optarg;
         break;
       case 'n':
         lenKeyMin = atoi(optarg);
@@ -71,68 +71,71 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE); // Salimos de la ejecucion del cracker. Algo raro ha debido de pasar.
     }
 
-	// TODO: Hacer un uppercase del diggest introducido para poder machearlo bien
-	// Miramos si queda algun parámetro sin caracter de opcion (es decir, un parametro suelto sin precedente). En este caso, deberia ser el hash.
+  // Miramos si queda algun parámetro sin caracter de opcion (es decir, un parametro suelto sin precedente). En este caso, deberia ser el hash.
   if (optind + 1 == argc) { 
-	// hay hash!
-	ejemplo_diggest = argv[optind];
+    // hay hash!
+    ejemplo_diggest = argv[optind];
+    // Lo convertimos a UPPER CASE por si acaso:
+    int p = 0;
+    while (ejemplo_diggest[p] != '\0') {ejemplo_diggest[p] =  toupper(ejemplo_diggest[p]); p++;}
   } else {
     // Si no hay más parametros o hay más de uno, mostramos por pantalla una alerta al usuario.
-    //diggest[0] = '\0'; // TODO: Guardamos caracter NULO????
     printf("Error, usage: %s [-a \"ALPHABET\"] [-n MIN] [-m MAX] <hash>\n", argv[0]);
+    exit(EXIT_FAILURE); // no seguimos ejecutando
   }
 
-	// Si el usuario no ha introducido los parametros opcionales y solo el hash como tal. Inicializamos a valores por defecto (DEFINES):
-	if (lenKeyMin == -1)
-		lenKeyMin = MIN;
-	if (lenKeyMax == -1)
-	   	lenKeyMax = MAX;
-	if (!alphabet) {
-	    	alphabet = ALPHABET;
-	}
+  // Si el usuario no ha introducido los parametros opcionales y solo el hash como tal. Inicializamos a valores por defecto (DEFINES):
+  if (lenKeyMin == -1)
+	lenKeyMin = MIN;
+  if (lenKeyMax == -1)
+   	lenKeyMax = MAX;
+  if (!alphabet) {
+    	alphabet = ALPHABET;
+  }
 
 	printf("---------------\n");
 	printf("· alfabeto: %s\n", alphabet);
 	printf("· min: %d\n", lenKeyMin);
 	printf("· max: %d\n", lenKeyMax);
 	printf("· diggest: %s\n", ejemplo_diggest);
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    exit(EXIT_FAILURE); // barrera para ver si funciona todo correctamente...
+    ///////// END GETOPT IMPLEMENTATION: //////////////////////////////////////////////
+    // A continuacion comenzamos con la impementacion del cracker propiamente dicho:
+
     int lenAlpha = strlen(alphabet);
     unsigned long long keyspace;
     unsigned long long i = 0;
     int j;
 
     //Private elements
-    unsigned char *candidato;
-    unsigned char *candidate_diggest;
-    unsigned char buffer [65];
+    unsigned char *candidato; // Clave candidata generada a partir de un determinado alfabeto con longitud de clave dada.
+    unsigned char *candidate_diggest; // Hash de la clave candidata
+    unsigned char buffer [65]; // Buffer auxiliar que utilizamos para formatear correctamente el hash que obtenemos de la clave candidata
     int l;
-    int comparacion;
-    int stop = 0;
+    int stop = 0; // "Booleano" que indica cuando parar de buscar.
 
-    // Generacion de TODAS las claves CANDIDATAS para una clave de un determinado tamaño comprendido entre MIN y MAX:
+    // Generacion de TODAS las claves CANDIDATAS para una clave de un determinado tamaño comprendido entre MIN y MAX.
+    // Hasheamos la clave candidata generada y la comparamos con el diggest introducido por el usuario por parametro.
+    // Si coinciden: entonces encontrado! hemos crackeado la contrasena. SI NO, entonces nos vamos a ver una peli con palomitas.
     for (j = lenKeyMin; j <= lenKeyMax&&!stop; j++) {
         keyspace = mypow(lenAlpha, j);
         for (i = 0; i < keyspace&&!stop; i++) {
-            candidato = cambioBase(alphabet, i, j);
+	    // Generamos candidato:
+            candidato = cambioBase(&alphabet[0], i, j);
             // Hasheamos el candidato con nuestra funcion Hash:
             candidate_diggest = sha256_hasher(candidato);
-            l = 0;
+	    // Formateamos adecuadamente el hash del candidato obtenido para poder compararlo con el <hash> introducido por el usuario:
             for(l = 0; l < 32; l++) {
                 sprintf(&buffer[2*l], "%02X", candidate_diggest[l]);
             }
             if (strcmp(ejemplo_diggest, buffer) == 0) {
-                printf("Key: %s Text: %s\n", candidato, buffer);
-                comparacion = strcmp((unsigned char *) ejemplo_diggest, buffer);
+                printf("Estas de ENHORABUENA! Match de diggests.\n· Diggest (hash): %s\n· Texto plano: %s\n", buffer, candidato);
                 stop=1;
             }else{
                 //printf("Key: %s\n", candidato);
             }
-            free(candidato);
-            free(candidate_diggest);
+            free(candidato); // evitamos que nuestra memoria RAM explote!
+            free(candidate_diggest); // evitamos que nuestra memoria RAM explote!
         }
     }
     return 0;
