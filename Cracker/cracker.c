@@ -1,3 +1,4 @@
+#include <omp.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -106,12 +107,12 @@ int main(int argc, char *argv[]) {
     unsigned long long keyspace;
     unsigned long long i = 0;
     int j;
+    int l;
 
     //Private elements
     unsigned char *candidato; // Clave candidata generada a partir de un determinado alfabeto con longitud de clave dada.
     unsigned char *candidate_diggest; // Hash de la clave candidata
     unsigned char buffer [65]; // Buffer auxiliar que utilizamos para formatear correctamente el hash que obtenemos de la clave candidata
-    int l;
     int stop = 0; // "Booleano" que indica cuando parar de buscar.
 
     // Generacion de TODAS las claves CANDIDATAS para una clave de un determinado tamaño comprendido entre MIN y MAX.
@@ -119,23 +120,28 @@ int main(int argc, char *argv[]) {
     // Si coinciden: entonces encontrado! hemos crackeado la contrasena. SI NO, entonces nos vamos a ver una peli con palomitas.
     for (j = lenKeyMin; j <= lenKeyMax&&!stop; j++) {
         keyspace = mypow(lenAlpha, j);
-        for (i = 0; i < keyspace&&!stop; i++) {
-	    // Generamos candidato:
-            candidato = cambioBase(&alphabet[0], i, j);
-            // Hasheamos el candidato con nuestra funcion Hash:
-            candidate_diggest = sha256_hasher(candidato);
-	    // Formateamos adecuadamente el hash del candidato obtenido para poder compararlo con el <hash> introducido por el usuario:
-            for(l = 0; l < 32; l++) {
-                sprintf(&buffer[2*l], "%02X", candidate_diggest[l]);
+        #pragma omp parallel for private(candidato, candidate_diggest, l, buffer) shared(stop)
+        for (i = 0; i < keyspace; i++) {
+            if(!stop) {
+                // Generamos candidato:
+                candidato = cambioBase(&alphabet[0], i, j);
+                // Hasheamos el candidato con nuestra funcion Hash:
+                candidate_diggest = sha256_hasher(candidato);
+                // Formateamos adecuadamente el hash del candidato obtenido para poder compararlo con el <hash> introducido por el usuario:
+                for (l = 0; l < 32; l++) {
+                    sprintf(&buffer[2 * l], "%02X", candidate_diggest[l]);
+                }
+                if (strcmp(ejemplo_diggest, buffer) == 0) {
+                    printf("Estas de ENHORABUENA! Match de diggests.\n· Diggest (hash): %s\n· Texto plano: %s\n",
+                           buffer, candidato);
+                    stop = 1;
+                    #pragma omp flush(stop)
+                } else {
+                    //printf("Key: %s\n", candidato);
+                }
+                free(candidato); // evitamos que nuestra memoria RAM explote!
+                free(candidate_diggest); // evitamos que nuestra memoria RAM explote!
             }
-            if (strcmp(ejemplo_diggest, buffer) == 0) {
-                printf("Estas de ENHORABUENA! Match de diggests.\n· Diggest (hash): %s\n· Texto plano: %s\n", buffer, candidato);
-                stop=1;
-            }else{
-                //printf("Key: %s\n", candidato);
-            }
-            free(candidato); // evitamos que nuestra memoria RAM explote!
-            free(candidate_diggest); // evitamos que nuestra memoria RAM explote!
         }
     }
     return 0;
