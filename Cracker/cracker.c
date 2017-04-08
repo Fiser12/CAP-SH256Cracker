@@ -8,7 +8,7 @@
 
 #define MIN 1
 #define MAX 4
-#define ALPHABET "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+#define ALPHABET "0123456789ABCDEF"
 #define HASHLENGTH 64
 
 /* Programa que dado un ALFABETO, un MINIMO y un MAXIMO de longitud de clave y el DIGGEST (generado por un hasher), genera una lista con tadas las claves candidatas posibles al mismo tiempo que contrasta si el diggest coincide con el hash de la clave candidata. Si coincide o no, se muestra un mensaje por pantalla indicandolo. */
@@ -114,6 +114,9 @@ int main(int argc, char *argv[]) {
     unsigned char *candidate_diggest; // Hash de la clave candidata
     unsigned char buffer [65]; // Buffer auxiliar que utilizamos para formatear correctamente el hash que obtenemos de la clave candidata
     int stop = 0; // "Booleano" que indica cuando parar de buscar.
+
+    // Establecemos numero de threads de cara al performance-test:
+    //omp_set_num_threads(4);
 
     // Generacion de TODAS las claves CANDIDATAS para una clave de un determinado tamaño comprendido entre MIN y MAX.
     // Hasheamos la clave candidata generada y la comparamos con el diggest introducido por el usuario por parametro.
