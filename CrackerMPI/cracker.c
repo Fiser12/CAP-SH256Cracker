@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <unistd.h> // para el 'getOpt'
 #include "mypow.h" // Implementacion de nuestra propia version de 'pow'
+#include "hasher/sha256.h" // Implementacion del hasher. En nuestro caso: SHA256
 
 #define MIN 1
 #define MAX 4
