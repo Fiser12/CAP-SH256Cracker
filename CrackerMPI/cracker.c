@@ -4,13 +4,11 @@
 #include <stdlib.h>
 #include <unistd.h> // para el 'getOpt'
 #include "mypow.h" // Implementacion de nuestra propia version de 'pow'
-#include "hasher/sha256.h" // Implementacion del hasher. En nuestro caso: SHA256
-#include <time.h>
 
 #define MIN 1
 #define MAX 4
 #define ALPHABET "0123456789ABCDEF"
-#define HASHLENGTH 64
+#define ASOMARCABEZA 4
 
 /* Programa que dado un ALFABETO, un MINIMO y un MAXIMO de longitud de clave y el DIGGEST (generado por un hasher), genera una lista con tadas las claves candidatas posibles al mismo tiempo que contrasta si el diggest coincide con el hash de la clave candidata. Si coincide o no, se muestra un mensaje por pantalla indicandolo. */
 /* ------------------------------------------------------ */
@@ -45,9 +43,8 @@ int main(int argc, char *argv[]) {
     ///////// START GETOPT IMPLEMENTATION: //////////////////////////////////////////////
     int c; // Caracter de opcion que parseamos (si existen...)
     opterr = 0; // If you set this variable to zero, getopt does not print any messages, but it still returns the character '?' to indicate an error
-    int size = 1;
     // Parseamos los parametros de entrada, busamos una '-a', '-n' y/o '-m':
-    while ((c = getopt(argc, argv, "a:n:m:s:")) != -1)
+    while ((c = getopt(argc, argv, "a:n:m:")) != -1)
         switch (c) {
             case 'a':
                 alphabet = optarg;
@@ -57,9 +54,6 @@ int main(int argc, char *argv[]) {
                 break;
             case 'm':
                 lenKeyMax = atoi(optarg);
-                break;
-            case 's':
-                size = atoi(optarg);
                 break;
             case '?':
                 // Si 'getOpt' no reconoce un caracter de opcion dado, guarda dicho caracter en 'optopt' y devuelve '?'
@@ -111,18 +105,18 @@ int main(int argc, char *argv[]) {
     // A continuacion comenzamos con la impementacion del cracker propiamente dicho:
 
     int lenAlpha = strlen(alphabet);
-    unsigned long long keyspace; // 'Size' es el numero de procesos en paralelo (MPI) 
+    unsigned long long keyspace; 
     unsigned long long i = 0;
     int j;
     int l;
-    int rank, chunk_size, indice_comienzo;
+    int rank, size, chunk_size, indice_comienzo, asomar_cabeza; // 'Size' es el numero de procesos en paralelo (MPI) 
 
     //Private elements
     unsigned char *candidato; // Clave candidata generada a partir de un determinado alfabeto con longitud de clave dada.
     unsigned char *candidate_diggest; // Hash de la clave candidata
     unsigned char buffer[65]; // Buffer auxiliar que utilizamos para formatear correctamente el hash que obtenemos de la clave candidata
     int stop = 0; // "Booleano" que indica cuando parar de buscar.
-    int stopFinal = 0;
+    int stopFinal = 0; // Sumatorio de los "booleanos" recibidos por cada Slave para que el master decida si parar o no.
     // Paralelizando con MPI:
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -132,12 +126,13 @@ int main(int argc, char *argv[]) {
     // Hasheamos la clave candidata generada y la comparamos con el diggest introducido por el usuario por parametro.
     // Si coinciden: entonces encontrado! hemos crackeado la contrasena. SI NO, entonces nos vamos a ver una peli con palomitas.
 
-    clock_t begin = clock();
     for (j = lenKeyMin; j <= lenKeyMax && !stopFinal; j++) {
         keyspace = mypow(lenAlpha, j);
 
 
         chunk_size = keyspace / size; // Cantidad de numeros que cada proceso ha de procesar, siendo 'Size' numero de procesos.
+	asomar_cabeza = chunk_size / ASOMARCABEZA; // Cada proceso se va a poner a escuchar si alguno de los otros procesos ha acabado. Esto 						// se va a hacer cuatro veces durante los calculos que cada uno de ellos hace. El master orquesta
+					// el resultado final y decide si parar o no.
 
         int k;
 
@@ -151,9 +146,9 @@ int main(int argc, char *argv[]) {
         } else {
             // Para cualquier otro proceso (incluido el master) recogemos el indice de inicio (por el cual parte cada proceso) y continuamos normal:
             MPI_Recv(&indice_comienzo, 1, MPI_UNSIGNED_LONG, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-            printf("NUMERO RECIBIDO! (proceso#%d) | numero = %d\n", rank, indice_comienzo);
+            //printf("NUMERO RECIBIDO! (proceso#%d) | numero = %d\n", rank, indice_comienzo);
         }
-        printf("%d | %d | %llu\n", indice_comienzo, chunk_size, i);
+        // printf("%d | %d | %llu\n", indice_comienzo, chunk_size, i);
 
         for (i = indice_comienzo; i < (indice_comienzo + chunk_size)&&!stopFinal; i++) {
             //printf("Soy proceso#%d, me ocupo del numero:%llu\n", rank, i);
@@ -170,9 +165,12 @@ int main(int argc, char *argv[]) {
                        buffer, candidato);
                 stop = 1;
             }
-            if(((clock()-begin)/CLOCKS_PER_SEC)>1){
-                MPI_Reduce(&stop, &stopFinal, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
-                begin = clock();
+            if(i == indice_comienzo + asomar_cabeza){
+		printf("Asomar cabeza: %d (proceso#%d)\n", indice_comienzo + asomar_cabeza, rank);
+		printf("Mi 'stop' (proceso#%d): %d\n", rank, stop);
+                MPI_Allreduce(&stop, &stopFinal, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+                asomar_cabeza += asomar_cabeza;
+		printf("STOP FINAL: %d (proceso#%d)\n", stopFinal, rank);
             }
         }
 
