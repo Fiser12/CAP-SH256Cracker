@@ -166,11 +166,11 @@ int main(int argc, char *argv[]) {
                 stop = 1;
             }
             if(i == indice_comienzo + asomar_cabeza){
-		printf("Asomar cabeza: %d (proceso#%d)\n", indice_comienzo + asomar_cabeza, rank);
-		printf("Mi 'stop' (proceso#%d): %d\n", rank, stop);
-                MPI_Allreduce(&stop, &stopFinal, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+		//printf("Asomar cabeza: %d (proceso#%d)\n", indice_comienzo + asomar_cabeza, rank);
+		//printf("	Mi 'stop' \t\t(proceso#%d): %d\n", rank, stop);
+                MPI_Allreduce(&stop, &stopFinal, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD); // Allreduce hace un reduce sobre un numero y lo devuelve a cada proceso.
                 asomar_cabeza += asomar_cabeza;
-		printf("STOP FINAL: %d (proceso#%d)\n", stopFinal, rank);
+		//printf("	STOP FINAL: %d (proceso#%d)\n", stopFinal, rank);
             }
         }
 
